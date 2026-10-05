@@ -3121,7 +3121,7 @@ do
         _G['BringTreeAbort']()
     end)
     _G['AutoFrostFarm'] = false
-    _BringTree:Toggle('Auto Farm Frost Tree', false, function(enabled)
+    _BringTree:Toggle('Auto Farm CaveCrawler Frost Volcano', false, function(enabled)
         _G['AutoFrostFarm'] = enabled
         if not enabled then
             _G['BringTreeAbort']()
@@ -3129,21 +3129,46 @@ do
         end
 
         task.spawn(function()
+            local route = { 'CaveCrawler', 'Frost', 'Volcano' }
             while _G['AutoFrostFarm'] do
-                local ok, axe = pcall(_G['CheckAxe'], 'Frost')
-                if not ok or not axe then
-                    _G['Notify']('Auto Farm: axe required')
-                    task.wait(2)
-                else
-                    _G['Menu']['SelectedTree'] = 'Frost'
+                local routeComplete = true
+                for _, treeType in ipairs(route) do
+                    if not _G['AutoFrostFarm'] then break end
+
+                    local hasAxe = false
+                    pcall(function()
+                        local axe = _G['CheckAxe'](treeType)
+                        hasAxe = axe ~= nil
+                    end)
+                    if not hasAxe then
+                        _G['Notify']('Auto Farm: axe required for ' .. treeType)
+                        task.wait(3)
+                        routeComplete = false
+                        break
+                    end
+
+                    local tree = _G['GetFitOfWood'](treeType)
+                    if not tree then
+                        task.wait(3)
+                        routeComplete = false
+                        break
+                    end
+
+                    _G['Menu']['SelectedTree'] = treeType
                     _G['Menu']['TreePlacement'] = _G['SelfOfPart'].CFrame
                     _G['Menu']['BringTreeStart'] = _G['SelfOfPart'].CFrame
                     _G['Menu']['StopChopping'] = false
-                    _G['BringTree']('Frost')
+                    _G['BringTree'](treeType)
+
                     if _G['AutoFrostFarm'] then
                         _G['SellWood']()
                     end
                     task.wait(0.5)
+                end
+
+                if _G['AutoFrostFarm'] and routeComplete then
+                    _G['Notify']('Route complete, waiting 300 seconds')
+                    task.wait(300)
                 end
             end
         end)
