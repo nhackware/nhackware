@@ -4938,7 +4938,7 @@ do
         end
 
         local storeName = _G['CheckShop'](items[1]) or '?'
-        if not npc.Verified and _G.FixedStoreIDs[storeName] == npc.ID then
+        if not npc.Verified and _G['FixedShopID'][storeName] == npc.ID then
             npc.Verified = true
         end
 
