@@ -1809,7 +1809,7 @@ do
         local Home = window:CreateTab('Home', '')
 
         local Credits = Home:Section('Credits')
-        Credits:Label('Updated by rndm')
+        Credits:Label('Updated by nhackware_dev | Original author: Rndm')
         Credits:Label('Remake of Dark V5')
         Credits:Label("Didn't put any discord link because his link alrd expired")
 
@@ -3119,6 +3119,34 @@ do
     end)
     _BringTree:Button('Abort', function()
         _G['BringTreeAbort']()
+    end)
+    _G['AutoFrostFarm'] = false
+    _BringTree:Toggle('Auto Farm Frost Tree', false, function(enabled)
+        _G['AutoFrostFarm'] = enabled
+        if not enabled then
+            _G['BringTreeAbort']()
+            return
+        end
+
+        task.spawn(function()
+            while _G['AutoFrostFarm'] do
+                local ok, axe = pcall(_G['CheckAxe'], 'Frost')
+                if not ok or not axe then
+                    _G['Notify']('Auto Farm: axe required')
+                    task.wait(2)
+                else
+                    _G['Menu']['SelectedTree'] = 'Frost'
+                    _G['Menu']['TreePlacement'] = _G['SelfOfPart'].CFrame
+                    _G['Menu']['BringTreeStart'] = _G['SelfOfPart'].CFrame
+                    _G['Menu']['StopChopping'] = false
+                    _G['BringTree']('Frost')
+                    if _G['AutoFrostFarm'] then
+                        _G['SellWood']()
+                    end
+                    task.wait(0.5)
+                end
+            end
+        end)
     end)
     _BringTree:Button('tp to Spooky or SpookyNeon tree', function()
         local nextFn3 = next
@@ -8056,7 +8084,7 @@ do
     end)
 
     local _Credits = _Settings:Section('Credits')
-    _Credits:Label('Made by Rndm')
+    _Credits:Label('Made by nhackware_dev | Original author: Rndm')
     
     Library:CreateThemeTab()
 
