@@ -13,9 +13,13 @@ void stop();
 void update(ImGuiIO &io, float display_w, float display_h);
 
 // Exclusive grab: while grabbed, the game stops receiving touch. Used to keep
-// the game from reacting to taps that land on the menu.
+// the game from reacting to taps that land on the menu. Root-only (EVIOCGRAB);
+// a no-op on the JNI backend, which mirrors events instead of stealing them.
 void set_grab(bool on);
 bool is_grabbed();
+
+// True when the JNI/MotionEvent backend is in use, i.e. the no-root build.
+bool using_jni();
 
 // Diagnostic for the menu's touch tab.
 const char *device_name();

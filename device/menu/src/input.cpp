@@ -1,5 +1,6 @@
 #include "input.h"
 #include "config.h"
+#include "jni_input.h"
 #include "log.h"
 
 #include "imgui.h"
@@ -36,6 +37,10 @@ float g_raw_y = 0.0f;
 bool g_have_pos = false;
 bool g_btn_touch = false;
 bool g_protocol_b = false;
+
+// Set when the JNI backend won. The two sources are mutually exclusive: the JNI
+// path needs no root, evdev does, and there is no point running both.
+bool g_using_jni = false;
 
 struct AxisRange {
     float min = 0.0f, max = 1.0f;
@@ -162,6 +167,15 @@ bool any_slot_active() {
 } // namespace
 
 void start() {
+    // Prefer the JNI bridge: it needs no root, so it is the only option that
+    // survives on a stock 'user' build where root would trip detection.
+    if (jni_input::start()) {
+        g_using_jni = true;
+        NH_LOGI("touch source: %s", jni_input::name());
+        return;
+    }
+    NH_LOGI("JNI touch unavailable, falling back to evdev (needs root)");
+
     g_fd = open_touch_device();
     if (g_fd < 0)
         return;
@@ -175,6 +189,11 @@ void start() {
 }
 
 void stop() {
+    if (g_using_jni) {
+        jni_input::stop();
+        g_using_jni = false;
+        return;
+    }
     if (!g_running.exchange(false))
         return;
     set_grab(false);
@@ -186,6 +205,10 @@ void stop() {
 }
 
 void set_grab(bool on) {
+    // EVIOCGRAB is a root-only ioctl. On the JNI path touches are mirrored, not
+    // stolen, so the game keeps seeing them - there is nothing to grab.
+    if (g_using_jni)
+        return;
     if (g_fd < 0 || g_grabbed.load() == on)
         return;
     if (ioctl(g_fd, EVIOCGRAB, (void *)(intptr_t)(on ? 1 : 0)) == 0) {
@@ -196,11 +219,23 @@ void set_grab(bool on) {
     }
 }
 
-bool is_grabbed() { return g_grabbed.load(); }
-const char *device_name() { return g_devname[0] ? g_devname : "(none)"; }
-bool is_open() { return g_fd >= 0; }
+bool is_grabbed() { return g_using_jni ? false : g_grabbed.load(); }
+bool using_jni() { return g_using_jni; }
+
+const char *device_name() {
+    if (g_using_jni)
+        return jni_input::name();
+    return g_devname[0] ? g_devname : "(none)";
+}
+
+bool is_open() { return g_using_jni ? jni_input::is_active() : g_fd >= 0; }
 
 void update(ImGuiIO &io, float display_w, float display_h) {
+    if (g_using_jni) {
+        jni_input::update(io, display_w, display_h);
+        return;
+    }
+
     bool down;
     float nx, ny;
     {

@@ -140,7 +140,9 @@ void draw_menu(const ImGuiIO &io) {
             ImGui::Text("process   %s", nh_process_name());
             ImGui::Text("config    %s", nh_config_path());
             ImGui::Text("touch     %s", input::is_open() ? input::device_name() : "NOT FOUND");
-            ImGui::Text("grabbed   %s", input::is_grabbed() ? "yes" : "no");
+            ImGui::Text("grabbed   %s",
+                        input::using_jni() ? "n/a (no root - events mirrored, not stolen)"
+                                           : (input::is_grabbed() ? "yes" : "no"));
             ImGui::Text("display   %.0f x %.0f", io.DisplaySize.x, io.DisplaySize.y);
             ImGui::Spacing();
 

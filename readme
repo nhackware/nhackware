@@ -2,29 +2,32 @@ nhackware - join us today
 
 ## android 11 emulator overlay menu
 
-Mod menu injected **from Windows into the emulator guest**. The menu renders
-inside the guest, on top of the game's own frame, and opens when you tap the red
-strip pinned to the bottom edge of the screen.
+Mod menu that runs **inside the emulator guest**, drawn on top of the game's own
+frame, opened by tapping the red strip pinned to the bottom edge of the screen.
 
+Two ways in. Route A needs no root, so there is nothing for a root check to find.
+
+```powershell
+# A - repack the APK, .so loads itself as the app's own uid. no root, no ptrace.
+.\build\build_android.ps1 -Abi x86_64
+.\build\repack_apk.ps1 -Apk C:\games\base.apk -Package com.example.game -Install
+
+# B - ptrace injection into a rooted guest (lab only, trips root detection)
+.\build\build_android.ps1
+.\build\build_win.ps1
+.\out\win\nhdeploy.exe --package com.example.game --watch --log
 ```
-.\build\build_android.ps1        # out\android\x86_64\{nhinject,libnhmenu.so}
-.\build\build_win.ps1            # out\win\nhdeploy.exe
-
-.\out\win\nhdeploy.exe --package com.example.game --log
-```
-
-Three pieces:
 
 | path | what |
 |---|---|
-| `win/nhdeploy/` | Windows CLI: adb discovery, rooting, push, inject, `--watch`, `--unload` |
-| `device/injector/` | `nhinject` - ptrace `.so` injector, runs **on the guest** as root |
-| `device/menu/` | `libnhmenu.so` - Dobby hook on `eglSwapBuffers`, ImGui overlay, evdev touch |
+| `repack/` | Java glue packed into the APK: ContentProvider loader + `Window.Callback` touch mirror |
+| `device/menu/` | `libnhmenu.so` - Dobby hook on `eglSwapBuffers`, ImGui overlay, JNI or evdev touch |
+| `device/injector/` | `nhinject` - on-device ptrace `.so` injector (route B) |
+| `win/nhdeploy/` | Windows CLI for route B: adb, rooting, push, inject, `--watch`, `--unload` |
 
-Chain: `nhdeploy` pushes both binaries over adb, roots the guest, relaxes
-SELinux, then runs `nhinject`, which ptrace-attaches, carves RWX scratch with a
-single-stepped raw syscall, stages the library path, and drives a remote
-`dlopen`. The payload's constructor hooks `eglSwapBuffers` and draws the ImGui
-overlay into the game's back buffer before the swap.
+The overlay hooks `eglSwapBuffers` and draws into the game's back buffer before
+the swap, so it needs no `SYSTEM_ALERT_WINDOW` and no overlay permission. Touch
+comes from a wrapped `Window.Callback` when there is no root, or straight from
+`/dev/input` when there is.
 
-Full setup, requirements and gotchas: [docs/INJECT.md](docs/INJECT.md)
+Full setup, root-detection breakdown and gotchas: [docs/INJECT.md](docs/INJECT.md)

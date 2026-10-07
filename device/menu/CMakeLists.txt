@@ -52,6 +52,7 @@ add_library(nhmenu SHARED
   src/overlay.cpp
   src/ui_menu.cpp
   src/input.cpp
+  src/jni_input.cpp
   src/config.cpp
   src/proc.cpp)
 
@@ -62,5 +63,6 @@ target_link_libraries(nhmenu PRIVATE nh_imgui dobby_static EGL GLESv3 log androi
 target_link_options(nhmenu PRIVATE -Wl,--build-id=none)
 set_target_properties(nhmenu PROPERTIES OUTPUT_NAME "nhmenu")
 
-# Symbol visibility: nothing needs to be exported, the ctor does all the work.
+# JNI_OnLoad / Java_nh_NhTouch_onMotion carry JNIEXPORT (default visibility), so
+# -fvisibility=hidden below does not hide them.
 target_compile_options(nhmenu PRIVATE -fvisibility=hidden -fno-omit-frame-pointer)
