@@ -4,6 +4,9 @@
 #   .\build\build_android.ps1 -Abi arm64-v8a     # arm64 guest
 #
 # Needs: NDK r25+ , cmake, ninja. Set $env:ANDROID_NDK_HOME or pass -Ndk.
+#
+# CMAKE_POLICY_VERSION_MINIMUM=3.5 is required because Dobby's CMakeLists still
+# declares cmake_minimum_required(VERSION 3.5), which CMake 4.x rejects outright.
 param(
     [string]$Abi = "x86_64",
     [string]$Ndk = $env:ANDROID_NDK_HOME,
@@ -45,6 +48,7 @@ function Build-Component($name, $srcDir, $extra) {
         -DANDROID_STL="c++_static" `
         -DCMAKE_BUILD_TYPE="$BuildType" `
         -DCMAKE_MAKE_PROGRAM="ninja" `
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
         @extra
     if ($LASTEXITCODE -ne 0) { throw "configure failed for $name" }
 
