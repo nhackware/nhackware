@@ -1,0 +1,27 @@
+# build output
+out/
+build-*/
+cmake-build-*/
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# artifacts
+*.so
+*.exe
+nhinject
+!device/**
+!win/**
+
+# deployer state (records the last dlopen handle per target)
+nhdeploy.state
+
+# editors
+.vs/
+.vscode/
+.idea/
+.cache/
+compile_commands.json

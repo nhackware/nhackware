@@ -1,1 +1,30 @@
 nhackware - join us today
+
+## android 11 emulator overlay menu
+
+Mod menu injected **from Windows into the emulator guest**. The menu renders
+inside the guest, on top of the game's own frame, and opens when you tap the red
+strip pinned to the bottom edge of the screen.
+
+```
+.\build\build_android.ps1        # out\android\x86_64\{nhinject,libnhmenu.so}
+.\build\build_win.ps1            # out\win\nhdeploy.exe
+
+.\out\win\nhdeploy.exe --package com.example.game --log
+```
+
+Three pieces:
+
+| path | what |
+|---|---|
+| `win/nhdeploy/` | Windows CLI: adb discovery, rooting, push, inject, `--watch`, `--unload` |
+| `device/injector/` | `nhinject` - ptrace `.so` injector, runs **on the guest** as root |
+| `device/menu/` | `libnhmenu.so` - Dobby hook on `eglSwapBuffers`, ImGui overlay, evdev touch |
+
+Chain: `nhdeploy` pushes both binaries over adb, roots the guest, relaxes
+SELinux, then runs `nhinject`, which ptrace-attaches, carves RWX scratch with a
+single-stepped raw syscall, stages the library path, and drives a remote
+`dlopen`. The payload's constructor hooks `eglSwapBuffers` and draws the ImGui
+overlay into the game's back buffer before the swap.
+
+Full setup, requirements and gotchas: [docs/INJECT.md](docs/INJECT.md)
