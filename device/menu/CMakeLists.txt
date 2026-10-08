@@ -11,10 +11,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ---------------------------------------------------------------- ImGui
 include(FetchContent)
 set(NH_IMGUI_TAG "v1.90.9" CACHE STRING "ocornut/imgui tag")
+# URL, not GIT_REPOSITORY: lets the build machine pull the sources with CMake's
+# own downloader, so the dev box does not need git installed.
 FetchContent_Declare(imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        ${NH_IMGUI_TAG}
-  GIT_SHALLOW    TRUE)
+  URL https://github.com/ocornut/imgui/archive/refs/tags/${NH_IMGUI_TAG}.tar.gz)
 FetchContent_MakeAvailable(imgui)
 
 add_library(nh_imgui STATIC
@@ -41,9 +41,7 @@ set(DOBBY_BUILD_TEST    OFF CACHE BOOL "" FORCE)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # Dobby does not set this itself
 set(NH_DOBBY_TAG "master" CACHE STRING "jmpews/Dobby tag (pin this for reproducible builds)")
 FetchContent_Declare(dobby
-  GIT_REPOSITORY https://github.com/jmpews/Dobby.git
-  GIT_TAG        ${NH_DOBBY_TAG}
-  GIT_SHALLOW    TRUE)
+  URL https://github.com/jmpews/Dobby/archive/refs/heads/${NH_DOBBY_TAG}.tar.gz)
 FetchContent_MakeAvailable(dobby)
 
 # ---------------------------------------------------------------- menu
