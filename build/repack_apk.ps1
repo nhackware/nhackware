@@ -141,7 +141,17 @@ $withDex = Join-Path $OutDir "with-dex.apk"
 Copy-Item $unsigned $withDex -Force
 $zip = [System.IO.Compression.ZipFile]::Open($withDex, 'Update')
 try {
-    $entry = $zip.CreateEntry("classes2.dex", [System.IO.Compression.CompressionLevel]::Optimal)
+    # The app may already ship classes2.dex..classesN.dex; pick the next free index.
+    $maxN = 1
+    foreach ($e in $zip.Entries) {
+        if ($e.FullName -match '^classes(\d+)\.dex$') {
+            $n = [int]$Matches[1]
+            if ($n -gt $maxN) { $maxN = $n }
+        }
+    }
+    $dexName = if ($maxN -eq 1) { "classes2.dex" } else { "classes$($maxN + 1).dex" }
+    Write-Host "[repack] adding $dexName"
+    $entry = $zip.CreateEntry($dexName, [System.IO.Compression.CompressionLevel]::Optimal)
     $es = $entry.Open()
     $fs = [System.IO.File]::OpenRead($dex)
     try { $fs.CopyTo($es) } finally { $fs.Dispose(); $es.Dispose() }
