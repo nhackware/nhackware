@@ -18,6 +18,7 @@ namespace detail {
 
 JavaVM *g_vm = nullptr;
 std::atomic<bool> g_active{false};
+std::atomic<bool> g_repack{false}; // set by JNI_OnLoad (repack loads us via System.loadLibrary)
 
 struct Touch {
     int action = -1;
@@ -74,6 +75,16 @@ bool start() {
     JavaVM *vm = detail::acquire_vm();
     if (!vm)
         return false;
+
+    // Repack path: System.loadLibrary ran JNI_OnLoad, so nh.NhTouch lives in the
+    // app's classloader and its dispatchTouchEvent calls our exported onMotion.
+    // FindClass from this worker pthread would use the system classloader and miss
+    // it, so do not gate on it here; NhLoader already drives NhTouch.install.
+    if (detail::g_repack.load()) {
+        detail::g_active.store(true);
+        NH_LOGI("JNI touch bridge up (repack: nh.NhTouch drives onMotion)");
+        return true;
+    }
 
     JNIEnv *env = nullptr;
     if (vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
@@ -172,5 +183,6 @@ Java_nh_NhTouch_onMotion(JNIEnv *, jclass, jint action, jfloat x, jfloat y, jint
 // Only called on the repacked-APK path, where System.loadLibrary loads us.
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     nh::jni_input::detail::g_vm = vm;
+    nh::jni_input::detail::g_repack.store(true);
     return JNI_VERSION_1_6;
 }
