@@ -58,10 +58,12 @@ function Build-Component($name, $srcDir, $extra) {
 
 Build-Component "nhinject" (Join-Path $repo "device\injector") @()
 Build-Component "nhmenu"   (Join-Path $repo "device\menu")     @()
+Build-Component "nhext"    (Join-Path $repo "device\ext")      @()
 
 # Collect artifacts into out\android\<abi>\, which is where nhdeploy looks.
 Copy-Item (Join-Path $repo "out\build\nhinject-$Abi\nhinject") $outDir -Force
 Copy-Item (Join-Path $repo "out\build\nhmenu-$Abi\libnhmenu.so") $outDir -Force
+Copy-Item (Join-Path $repo "out\build\nhext-$Abi\nhext") $outDir -Force
 
 Write-Host "`n[build] artifacts:"
 Get-ChildItem $outDir | ForEach-Object { Write-Host ("  {0,-18} {1,10} bytes" -f $_.Name, $_.Length) }
