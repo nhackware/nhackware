@@ -106,6 +106,15 @@ Write-Host "[repack] patching AndroidManifest.xml"
 $manifest = Join-Path $work "AndroidManifest.xml"
 $xml = Get-Content $manifest -Raw
 
+# Unity games set extractNativeLibs="false" with page-aligned uncompressed .so.
+# apktool recompresses the libs, so the installer fails with
+# INSTALL_FAILED_CONTAINER_ERROR (res=-18). Force extraction at install time.
+if ($xml -match 'android:extractNativeLibs="[^"]*"') {
+    $xml = $xml -replace 'android:extractNativeLibs="[^"]*"', 'android:extractNativeLibs="true"'
+} else {
+    $xml = $xml -replace '(<application\b)', '$1 android:extractNativeLibs="true"'
+}
+
 # provider authorities must be unique per package
 $authorities = "$Package.nhloader"
 $provider = @"
