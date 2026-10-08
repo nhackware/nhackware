@@ -109,8 +109,8 @@ public final class NhTouch implements Window.Callback {
                 values = ((Map<IBinder, Object>) map).values();
             } else {
                 // ArrayMap on some builds exposes values() but is not a java.util.Map
-                Method values = map.getClass().getMethod("values");
-                Object v = values.invoke(map);
+                Method m = map.getClass().getMethod("values");
+                Object v = m.invoke(map);
                 values = (Iterable<?>) v;
             }
 
@@ -186,7 +186,7 @@ public final class NhTouch implements Window.Callback {
     // Everything else is a straight pass-through to the original callback.
 
     @Override public boolean dispatchKeyEvent(android.view.KeyEvent e) { return wrapped.dispatchKeyEvent(e); }
-    @Override public boolean dispatchKeyShortcutEvent(android.view.KeyEvent e, char c) { return wrapped.dispatchKeyShortcutEvent(e, c); }
+    @Override public boolean dispatchKeyShortcutEvent(android.view.KeyEvent e) { return wrapped.dispatchKeyShortcutEvent(e); }
     @Override public boolean dispatchTrackballEvent(MotionEvent e) { return wrapped.dispatchTrackballEvent(e); }
     @Override public boolean dispatchGenericMotionEvent(MotionEvent e) { return wrapped.dispatchGenericMotionEvent(e); }
     @Override public boolean dispatchPopulateAccessibilityEvent(android.view.accessibility.AccessibilityEvent e) { return wrapped.dispatchPopulateAccessibilityEvent(e); }
