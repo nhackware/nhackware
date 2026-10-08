@@ -48,7 +48,7 @@ function Build-Component($name, $srcDir, $extra) {
         -DANDROID_STL="c++_static" `
         -DCMAKE_BUILD_TYPE="$BuildType" `
         -DCMAKE_MAKE_PROGRAM="ninja" `
-        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+        -D"CMAKE_POLICY_VERSION_MINIMUM=3.5" `
         @extra
     if ($LASTEXITCODE -ne 0) { throw "configure failed for $name" }
 
