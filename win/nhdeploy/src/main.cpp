@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
     }
     std::cout << "[adb] serial " << o.serial << "\n";
 
-    // Default payload paths, relative to the exe: out\android\<abi>\
+    // Default payload paths, relative to the exe: out/android/<abi>/
     char exepath[MAX_PATH];
     GetModuleFileNameA(nullptr, exepath, MAX_PATH);
     fs::path root = fs::path(exepath).parent_path().parent_path().parent_path();
