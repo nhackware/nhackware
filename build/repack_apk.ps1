@@ -101,6 +101,23 @@ if ($LASTEXITCODE -ne 0) { throw "d8 failed" }
 $dex = Join-Path $dexOut "classes.dex"
 if (-not (Test-Path $dex)) { throw "d8 produced no classes.dex" }
 
+# ------------------------------------------- 3b. disassemble our dex into smali
+# Injecting the dex after apktool build needs zip surgery that leaves the .so
+# entries with inconsistent local headers (installer fails: res=-18). Instead let
+# apktool build our dex from smali in the same clean pass as the app's own dex.
+$javaExe = Resolve-Tool "java"
+if (-not $javaExe) { throw "java not found - install a JDK" }
+$baksmali = Join-Path $env:USERPROFILE "tools\baksmali.jar"
+if (-not (Test-Path $baksmali)) { throw "baksmali.jar not found at $baksmali" }
+$smaliTmp = Join-Path $OutDir "smali-nh"
+if (Test-Path $smaliTmp) { Remove-Item $smaliTmp -Recurse -Force }
+& $javaExe -jar $baksmali d $dex -o $smaliTmp
+if ($LASTEXITCODE -ne 0) { throw "baksmali failed" }
+$slot = 2
+while (Test-Path (Join-Path $work "smali_classes$slot")) { $slot++ }
+Copy-Item $smaliTmp (Join-Path $work "smali_classes$slot") -Recurse -Force
+Write-Host "[repack] loader smali -> smali_classes$slot"
+
 # ------------------------------------------------------- 4. patch the manifest
 Write-Host "[repack] patching AndroidManifest.xml"
 $manifest = Join-Path $work "AndroidManifest.xml"
@@ -141,35 +158,11 @@ $unsigned = Join-Path $OutDir "unsigned.apk"
 & $apktool b --use-aapt2 $work -o $unsigned
 if ($LASTEXITCODE -ne 0) { throw "apktool build failed" }
 
-# ------------------------------------------------ 6. merge our dex in as #2
-# Android loads classes.dex, classes2.dex, ... from the APK, so we do not have to
-# touch the app's own dex.
-Write-Host "[repack] adding classes2.dex"
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-$withDex = Join-Path $OutDir "with-dex.apk"
-Copy-Item $unsigned $withDex -Force
-$zip = [System.IO.Compression.ZipFile]::Open($withDex, 'Update')
-try {
-    # The app may already ship classes2.dex..classesN.dex; pick the next free index.
-    $maxN = 1
-    foreach ($e in $zip.Entries) {
-        if ($e.FullName -match '^classes(\d+)\.dex$') {
-            $n = [int]$Matches[1]
-            if ($n -gt $maxN) { $maxN = $n }
-        }
-    }
-    $dexName = if ($maxN -eq 1) { "classes2.dex" } else { "classes$($maxN + 1).dex" }
-    Write-Host "[repack] adding $dexName"
-    $entry = $zip.CreateEntry($dexName, [System.IO.Compression.CompressionLevel]::Optimal)
-    $es = $entry.Open()
-    $fs = [System.IO.File]::OpenRead($dex)
-    try { $fs.CopyTo($es) } finally { $fs.Dispose(); $es.Dispose() }
-} finally { $zip.Dispose() }
-
-# --------------------------------------------------------- 7. align and sign
+# --------------------------------------------------------- 6. align and sign
+# apktool already built our loader dex from smali_classesN, so no zip surgery.
 Write-Host "[repack] zipalign"
 $aligned = Join-Path $OutDir "aligned.apk"
-& $zipalign -p -f 4 $withDex $aligned
+& $zipalign -p -f 4 $unsigned $aligned
 if ($LASTEXITCODE -ne 0) { throw "zipalign failed" }
 
 $ks = Join-Path $OutDir "nh.keystore"
