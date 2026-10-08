@@ -1,11 +1,10 @@
 #include "overlay.h"
 #include "config.h"
+#include "hook.h"
 #include "input.h"
 #include "log.h"
 #include "proc.h"
 #include "ui_menu.h"
-
-#include "dobby.h"
 
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
@@ -201,14 +200,20 @@ bool install() {
     if (!target)
         return false;
 
-    // Dobby's ABI is plain void*: int DobbyHook(void *addr, void *fake, void **orig)
-    if (DobbyHook(target, (void *)hk_eglSwapBuffers, (void **)&o_eglSwapBuffers) != 0) {
-        NH_LOGE("DobbyHook(eglSwapBuffers) failed");
-        return false;
-    }
+    // Keep a direct pointer to the real function so the hook can chain to it.
+    o_eglSwapBuffers = (eglSwapBuffers_t)target;
+
+    // Rewrite every importer's GOT slot. Game modules that are not loaded yet
+    // get picked up by rescan_now(), driven from the worker thread.
+    hook::hook_got("eglSwapBuffers", (void *)hk_eglSwapBuffers, nullptr);
     g_installed.store(true);
-    NH_LOGI("hooked eglSwapBuffers @ %p", target);
+    NH_LOGI("GOT-hooked eglSwapBuffers (real @ %p)", target);
     return true;
+}
+
+void rescan_now() {
+    if (g_installed.load())
+        hook::rescan("eglSwapBuffers", (void *)hk_eglSwapBuffers);
 }
 
 void uninstall() {
@@ -226,9 +231,7 @@ void uninstall() {
     if (g_ui_alive.load())
         NH_LOGW("game stopped swapping; skipping ImGui teardown to avoid a contextless GL call");
 
-    void *target = resolve_egl("eglSwapBuffers");
-    if (target)
-        DobbyDestroy(target);
+    hook::unhook_all();
     o_eglSwapBuffers = nullptr;
     g_installed.store(false);
     NH_LOGI("unhooked eglSwapBuffers");

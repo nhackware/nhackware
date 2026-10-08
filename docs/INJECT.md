@@ -82,7 +82,7 @@ nhdeploy.exe                                  /data/local/tmp/nhmenu/
                                                   remote dlopen() --> constructor
                                                                         |
                                                                         v
-                                            hk_eglSwapBuffers (Dobby inline hook)
+                                            hk_eglSwapBuffers (GOT hook (dl_iterate_phdr))
                                               ImGui -> back buffer, before the swap
                                               /dev/input/event* + EVIOCGRAB
 ```

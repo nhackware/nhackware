@@ -8,6 +8,10 @@ bool install();  // hooks eglSwapBuffers
 void uninstall();
 bool is_installed();
 
+// Re-scan for modules loaded after the first hook (e.g. the game's own .so).
+// Driven from the worker thread; idempotent.
+void rescan_now();
+
 // True once the UI has drawn at least one frame (menu is effectively live).
 bool is_active();
 

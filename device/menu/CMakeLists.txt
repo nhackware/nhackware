@@ -32,17 +32,7 @@ target_include_directories(nh_imgui PUBLIC
 target_compile_definitions(nh_imgui PUBLIC IMGUI_IMPL_OPENGL_ES3)
 target_compile_options(nh_imgui PRIVATE -Wno-unused-function)
 
-# ---------------------------------------------------------------- Dobby
-# Dobby always defines both `dobby` (SHARED) and `dobby_static` (STATIC); there is
-# no DOBBY_GENERATE_SHARED switch. We want the static one folded into libnhmenu.so.
-set(DOBBY_DEBUG        OFF CACHE BOOL "" FORCE)
-set(DOBBY_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
-set(DOBBY_BUILD_TEST    OFF CACHE BOOL "" FORCE)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # Dobby does not set this itself
-set(NH_DOBBY_TAG "master" CACHE STRING "jmpews/Dobby tag (pin this for reproducible builds)")
-FetchContent_Declare(dobby
-  URL https://github.com/jmpews/Dobby/archive/refs/heads/${NH_DOBBY_TAG}.tar.gz)
-FetchContent_MakeAvailable(dobby)
+
 
 # ---------------------------------------------------------------- menu
 add_library(nhmenu SHARED
@@ -51,11 +41,12 @@ add_library(nhmenu SHARED
   src/ui_menu.cpp
   src/input.cpp
   src/jni_input.cpp
+  src/hook.cpp
   src/config.cpp
   src/proc.cpp)
 
 target_include_directories(nhmenu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(nhmenu PRIVATE nh_imgui dobby_static EGL GLESv3 log android)
+target_link_libraries(nhmenu PRIVATE nh_imgui EGL GLESv3 log android)
 
 # Keep the constructor; -ffunction-sections plus a version script would strip it.
 target_link_options(nhmenu PRIVATE -Wl,--build-id=none)

@@ -59,6 +59,8 @@ void *worker(void *) {
     for (int i = 0; i < 24 * 3600 * 2; i++) {
         if (nh_ui_unload_requested())
             break;
+        // pick up game modules that finished loading after the first hook
+        overlay::rescan_now();
         usleep(500000);
     }
 
