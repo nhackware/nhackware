@@ -12,7 +12,8 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-extern "C" IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+// imgui ships this declaration inside '#if 0'; copy it out as instructed.
+IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static ID3D11Device *g_pd3dDevice = nullptr;
 static ID3D11DeviceContext *g_pd3dCtx = nullptr;
