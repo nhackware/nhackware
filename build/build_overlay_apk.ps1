@@ -36,7 +36,7 @@ Remove-Item -Recurse -Force $obj -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $obj | Out-Null
 
 Write-Host "[apk] javac"
-& $javac -source 8 -target 8 -classpath $jar -d $obj (Get-ChildItem -Recurse (Join-Path $repo "device\overlay\src") -Filter *.java).FullName
+& $javac -source 8 -target 8 -encoding UTF-8 -classpath $jar -d $obj (Get-ChildItem -Recurse (Join-Path $repo "device\overlay\src") -Filter *.java).FullName
 if ($LASTEXITCODE -ne 0) { Write-Host "[apk] javac failed"; exit 1 }
 
 Write-Host "[apk] d8"
