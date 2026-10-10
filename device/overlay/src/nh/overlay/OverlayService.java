@@ -25,6 +25,7 @@ public class OverlayService extends Service {
     static final String PKG = "com.axlebolt.standoff2";
     private WindowManager wm;
     private View menuView;
+    private View btnView;
     private boolean menuOpen;
     static boolean hasRoot;
 
@@ -82,6 +83,7 @@ public class OverlayService extends Service {
 
     private void addRedButton() {
         final View btn = new RedButton(this);
+        btnView = btn;
         int sz = (int) (64 * getResources().getDisplayMetrics().density);
         WindowManager.LayoutParams p = lp(sz, sz, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         btn.setOnTouchListener((v, ev) -> {
@@ -109,6 +111,8 @@ public class OverlayService extends Service {
 
     @Override
     public void onDestroy() {
+        if (menuView != null) { try { wm.removeView(menuView); } catch (Exception e) {} menuView = null; }
+        if (btnView != null) { try { wm.removeView(btnView); } catch (Exception e) {} btnView = null; }
         super.onDestroy();
     }
 
@@ -200,7 +204,7 @@ public class OverlayService extends Service {
                     if (Math.abs(y - ry + 7 * d) < 17 * d && x < w / 2f) {
                         String it = ITEMS[tab][i];
                         if (it.equals("unload")) {
-                            stopSelf();
+                            ((OverlayService) getContext()).stopSelf();
                             return true;
                         }
                         if (!it.isEmpty()) { ON[tab][i] = !ON[tab][i]; invalidate(); }
