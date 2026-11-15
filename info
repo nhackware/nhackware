@@ -4,25 +4,25 @@
 
 detected | rage tp (insta)
 questionable | rage tp (semirage)
-detected | loop tp
+questionable | loop tp
 undetected | speed (kart nitro)
-questionable | fly
+undetected | fly
 undetected | killaura
 undetected | engine boost (kart)
-detected | spawn ramp
-questionable | vert nitro
-questionable | gyro lock
+questionable | spawn ramp
+undetected | vert nitro
+undetected | gyro lock
 detected | click tp
-questionable | v2 tp tool
+undetected | v2 tp tool
 detected | save/tp pos
 detected | tp to pumpkin
 detected | tp to og money
 undetected | esp
 questionable | annoy all near
-detected | chat spam
-questionable | chat auto-reply
+undetected | chat spam
+undetected | chat auto-reply
 questionable | auto rice farm
 detected | auto eat
-detected | auto worker
-detected | bounty hunter
+questionable | auto worker
+questionable | bounty hunter
 undetected | api
