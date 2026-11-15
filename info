@@ -1,1 +1,14 @@
-
+# NHackWare — detection status (GRG)
+# формат: статус | название
+# статусы: undetected / questionable / detected
+undetected | rice farm
+undetected | killaura
+undetected | auto worker
+undetected | esp (money / tree / pumpkin / leader)
+undetected | payment tracker
+undetected | chat spam
+questionable | fly
+questionable | kart nitro + ramps
+questionable | loop tp (rage)
+questionable | make it rain
+detected | (пусто — модерация в запое)
