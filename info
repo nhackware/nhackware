@@ -3,17 +3,17 @@
 # статусы: undetected / questionable / detected
 
 detected | rage tp (insta)
-undetected | rage tp (semirage)
-undetected | loop tp
+questionable | rage tp (semirage)
+detected | loop tp
 undetected | speed (kart nitro)
-undetected | fly
+detected | fly
 undetected | killaura
-undetected | engine boost (kart)
-undetected | spawn ramp
-undetected | vert nitro
-undetected | gyro lock
+detected | engine boost (kart)
+detected | spawn ramp
+detected | vert nitro
+detected | gyro lock
 detected | click tp
-undetected | v2 tp tool
+detected | v2 tp tool
 detected | save pos
 detected | tp to pumpkin
 detected | tp to og money
@@ -21,14 +21,10 @@ undetected | og money esp
 undetected | tree entities esp
 undetected | pumpkin esp
 undetected | leader esp
-undetected | annoy all near
-undetected | chat spam
+questionable | annoy all near
+questionable | chat spam
 undetected | chat auto-reply
 detected | auto rice farm
 detected | auto eat
 detected | auto worker
 detected | bounty hunter
-undetected | payment tracker
-undetected | watermark (fps/ping)
-undetected | f9 console logs
-undetected | other tab stats
