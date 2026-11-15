@@ -1,14 +1,34 @@
 # NHackWare — detection status (GRG)
 # формат: статус | название
 # статусы: undetected / questionable / detected
-undetected | rice farm
-undetected | killaura
-undetected | auto worker
-undetected | esp (money / tree / pumpkin / leader)
-undetected | payment tracker
-undetected | chat spam
+
+questionable | rage tp (insta)
+questionable | rage tp (semirage)
+questionable | loop tp
+questionable | speed (kart nitro)
 questionable | fly
-questionable | kart nitro + ramps
-questionable | loop tp (rage)
-questionable | make it rain
-detected | (пусто — модерация в запое)
+questionable | killaura
+questionable | engine boost (kart)
+questionable | spawn ramp
+questionable | vert nitro
+questionable | gyro lock
+questionable | click tp
+questionable | v2 tp tool
+questionable | save pos
+questionable | tp to pumpkin
+questionable | tp to og money
+questionable | og money esp
+questionable | tree entities esp
+questionable | pumpkin esp
+questionable | leader esp
+questionable | annoy all near
+questionable | chat spam
+questionable | chat auto-reply
+questionable | auto rice farm
+questionable | auto eat
+questionable | auto worker
+questionable | bounty hunter
+questionable | payment tracker
+questionable | watermark (fps/ping)
+questionable | f9 console logs
+questionable | other tab stats
